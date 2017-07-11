@@ -1,2 +1,2 @@
-# Raycasting
-Playing around with SDL and Raycasting in Go
+# Go
+Exploring programming concepts and playing in Golang.
