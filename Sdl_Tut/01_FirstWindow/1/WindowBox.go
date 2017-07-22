@@ -16,6 +16,8 @@ func main() {
 	if err != nil {
 		log.Fatal("SDL could not initialize! Error:", err)
 	}
+	
+	defer sdl.Quit
 
 	window, err = sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
 		800, 600, sdl.WINDOW_SHOWN)
@@ -23,6 +25,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Window could not be created! Error:", err)
 	}
+
+	defer window.Destroy()
 
 	screenSurface, err = window.GetSurface()
 
@@ -47,6 +51,6 @@ func main() {
 
 	sdl.Delay(2000)
 
-	window.Destroy()
-	sdl.Quit()
+	
+
 }
