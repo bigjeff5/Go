@@ -16,8 +16,8 @@ func main() {
 	if err != nil {
 		log.Fatal("SDL could not initialize! Error:", err)
 	}
-	
-	defer sdl.Quit
+
+	defer sdl.Quit()
 
 	window, err = sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
 		800, 600, sdl.WINDOW_SHOWN)
@@ -50,7 +50,5 @@ func main() {
 	}
 
 	sdl.Delay(2000)
-
-	
 
 }
