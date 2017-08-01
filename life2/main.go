@@ -82,6 +82,7 @@ func (l *life) step() {
 }
 
 // String converts life state from bool to string
+// must capitalize func name so fmt.Print can use it
 func (l *life) String() string {
 	var buf bytes.Buffer
 	for y := 0; y < l.h; y++ {
