@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type field struct {
@@ -60,6 +62,7 @@ type life struct {
 // newLife(width, height int) generates a new life game with a random initial state
 func newLife(w, h int) *life {
 	a := newField(w, h)
+	rand.Seed(int64(time.Now().Second()))
 	for i := 0; i < (w * h / 4); i++ {
 		a.set(rand.Intn(w), rand.Intn(h), true)
 	}
@@ -81,8 +84,22 @@ func (l *life) step() {
 	l.a, l.b = l.b, l.a
 }
 
+func (l *life) render(s *sdl.Surface) {
+
+	for y := range l.a.s {
+		for x := range l.a.s[y] {
+			rect := sdl.Rect{X: int32(cellPixels * x), Y: int32(cellPixels * y), W: int32(cellPixels), H: int32(cellPixels)}
+			s.FillRect(&rect, 0xFFFFFFFF)
+			if l.a.alive(x, y) {
+				s.FillRect(&rect, 0x00000000)
+			}
+		}
+	}
+}
+
 // String converts life state from bool to string
 // must capitalize func name so fmt.Print can use it
+// for console output
 func (l *life) String() string {
 	var buf bytes.Buffer
 	for y := 0; y < l.h; y++ {
@@ -98,6 +115,36 @@ func (l *life) String() string {
 	return buf.String()
 }
 
+// initSDL generates the game window and creates a hook to it
+func initSDL(w, h int) (*sdl.Window, *sdl.Surface, error) {
+	var err error
+	var window *sdl.Window
+	var surface *sdl.Surface
+
+	sdl.Init(sdl.INIT_EVERYTHING)
+	if err != nil {
+		fmt.Printf("Failed to init SDL. Error: %v", err)
+		return window, surface, err
+	}
+
+	window, err = sdl.CreateWindow("Jeff's Conway's Game of Life", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, w, h, sdl.WINDOW_SHOWN)
+
+	if err != nil {
+		fmt.Printf("Failed to set sdl.Window. Error: %v", err)
+		return window, surface, err
+	}
+
+	surface, err = window.GetSurface()
+
+	if err != nil {
+		fmt.Printf("Failed to set sdl.Window. Error: %v", err)
+		return window, surface, err
+	}
+
+	return window, surface, err
+
+}
+
 const (
 	width      = 800
 	height     = 600
@@ -109,12 +156,34 @@ func main() {
 	h := height / cellPixels
 
 	life := newLife(w, h)
-	//window := newSDL(x, y)
-	for r := 0; r < 300; r++ {
+	window, surface, err := initSDL(width, height)
+
+	if err != nil {
+		fmt.Printf("Error initializing SDL. Error: %v", err)
+	}
+
+	defer sdl.Quit()
+
+	defer window.Destroy()
+
+	life.render(surface)
+	window.UpdateSurface()
+	quit := false
+	var event sdl.Event
+
+	for !quit { //r := 0; r < 300; r++ {
+		now := time.Now().Second()
 		life.step()
-		fmt.Print("\x0c", life)
-		time.Sleep(time.Millisecond * 66)
-		//window.UpdateSurface
+		life.render(surface)
+		window.UpdateSurface()
+
+		// Checks
+		event = sdl.PollEvent()
+		switch event.(type) {
+		case *sdl.QuitEvent:
+			quit = true
+		}
+		sdl.Delay(uint32(30 - (time.Now().Second() - now)))
 	}
 
 }
